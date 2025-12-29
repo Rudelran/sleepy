@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLEEPY - Case File</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: #8b7355;
+            color: #2c2419;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 전체 서류철 컨테이너 */
+        .file-cabinet {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* 서류철 탭 네비게이션 */
+        .folder-tabs {
+            display: flex;
+            gap: 3px;
+            padding-left: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .folder-tab {
+            font-family: 'Special Elite', cursive;
+            font-size: 11px;
+            color: #5c4d3a;
+            background: #d4c4a8;
+            border: none;
+            padding: 10px 18px 8px;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            top: 3px;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .folder-tab:hover {
+            background: #e8dcc8;
+            top: 0;
+        }
+
+        .folder-tab.active {
+            background: #f5f0e1;
+            top: 0;
+            color: #2c2419;
+            font-weight: bold;
+        }
+
+        /* 메인 폴더 (종이) */
+        .main-folder {
+            background: #f5f0e1;
+            border: 1px solid #c9b896;
+            box-shadow: 
+                3px 3px 10px rgba(0,0,0,0.2),
+                inset 0 0 50px rgba(139,115,85,0.05);
+            position: relative;
+            min-height: 80vh;
+        }
+
+        /* 펀치 구멍 */
+        .punch-holes {
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 60px;
+            gap: 80px;
+        }
+
+        .punch-hole {
+            width: 18px;
+            height: 18px;
+            background: #8b7355;
+            border-radius: 50%;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 빨간 마진 라인 */
+        .margin-line {
+            position: absolute;
+            left: 70px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #cc6b6b;
+            opacity: 0.5;
+        }
+
+        /* 컨텐츠 영역 */
+        .folder-content {
+            padding: 40px 50px 60px 90px;
+            position: relative;
+        }
+
+        /* 기밀 스탬프 */
+        .stamp-confidential {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-family: 'Special Elite', cursive;
+            font-size: 14px;
+            color: #8b2500;
+            border: 3px solid #8b2500;
+            padding: 5px 15px;
+            transform: rotate(-12deg);
+            opacity: 0.7;
+            letter-spacing: 3px;
+        }
+
+        /* 헤더 섹션 */
+        .file-header {
+            border-bottom: 2px solid #2c2419;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .file-number {
+            font-family: 'Courier Prime', monospace;
+            font-size: 11px;
+            color: #8a7a65;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .file-title {
+            font-family: 'Special Elite', cursive;
+            font-size: clamp(36px, 8vw, 52px);
+            color: #2c2419;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .file-subtitle {
+            font-family: 'Courier Prime', monospace;
+            font-size: 14px;
+            color: #5c4d3a;
+            letter-spacing: 1px;
+        }
+
+        /* 타자기 타이핑 효과 */
+        .typed-text {
+            font-family: 'Special Elite', cursive;
+            font-size: 15px;
+            color: #2c2419;
+            line-height: 2;
+        }
+
+        /* 손글씨 메모 */
+        .handwritten {
+            font-family: 'Noto Serif KR', serif;
+            font-style: italic;
+            color: #1e4d8c;
+        }
+
+        .handwritten-red {
+            font-family: 'Noto Serif KR', serif;
+            font-style: italic;
+            color: #8b2500;
+        }
+
+        /* 정보 박스 */
+        .info-box {
+            background: rgba(255,255,255,0.5);
+            border: 1px dashed #8a7a65;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .info-box-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 12px;
+            color: #5c4d3a;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #c9b896;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-family: 'Courier Prime', monospace;
+            color: #5c4d3a;
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            font-family: 'Special Elite', cursive;
+            color: #2c2419;
+        }
+
+        /* 구분선 */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            gap: 15px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #c9b896;
+        }
+
+        .divider-icon {
+            font-size: 16px;
+            color: #8a7a65;
+        }
+
+        /* 섹션 */
+        .section {
+            margin: 30px 0;
+        }
+
+        .section-header {
+            font-family: 'Courier Prime', monospace;
+            font-size: 13px;
+            color: #5c4d3a;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #8a7a65;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header::before {
+            content: '▸';
+            color: #8b2500;
+        }
+
+        .section-content {
+            font-family: 'Special Elite', cursive;
+            font-size: 14px;
+            color: #2c2419;
+            line-height: 1.9;
+        }
+
+        .section-content p {
+            margin-bottom: 15px;
+            text-indent: 2em;
+        }
+
+        /* 퀵 링크 카드 */
+        .quick-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .file-card {
+            background: #fff;
+            border: 1px solid #c9b896;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .file-card::before {
+            content: '📎';
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            font-size: 20px;
+        }
+
+        .file-card:hover {
+            background: #fdfcf7;
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .file-card-title {
+            font-family: 'Special Elite', cursive;
+            font-size: 14px;
+            color: #2c2419;
+            margin-bottom: 8px;
+        }
+
+        .file-card-desc {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 11px;
+            color: #8a7a65;
+            line-height: 1.6;
+        }
+
+        .file-card-ref {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #a09080;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* 클립보드 메모 */
+        .clipboard-note {
+            background: #fffef5;
+            border: 1px solid #e8e2d5;
+            padding: 20px;
+            margin: 25px 0;
+            position: relative;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.08);
+            transform: rotate(-0.5deg);
+        }
+
+        .clipboard-note::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 24px;
+            background: linear-gradient(180deg, #c9a227 0%, #a08020 100%);
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .clipboard-note-content {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 14px;
+            color: #1e4d8c;
+            font-style: italic;
+            text-align: center;
+            line-height: 1.9;
+        }
+
+        /* 타자기 줄 효과 */
+        .typewriter-lines {
+            background-image: repeating-linear-gradient(
+                transparent,
+                transparent 27px,
+                #c9b896 27px,
+                #c9b896 28px
+            );
+            padding: 5px 0;
+        }
+
+        /* 날짜 스탬프 */
+        .date-stamp {
+            font-family: 'Courier Prime', monospace;
+            font-size: 11px;
+            color: #5c4d3a;
+            text-align: right;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #c9b896;
+        }
+
+        /* 서명란 */
+        .signature-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #c9b896;
+            display: flex;
+            justify-content: flex-end;
+            gap: 40px;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 120px;
+            border-bottom: 1px solid #2c2419;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+
+        .signature-label {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #8a7a65;
+            letter-spacing: 1px;
+        }
+
+        /* 푸터 */
+        .file-footer {
+            background: #e8dcc8;
+            padding: 20px 50px 20px 90px;
+            border-top: 1px solid #c9b896;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-ref {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #8a7a65;
+            letter-spacing: 1px;
+        }
+
+        .footer-page {
+            font-family: 'Special Elite', cursive;
+            font-size: 12px;
+            color: #5c4d3a;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .file-cabinet {
+                padding: 10px;
+            }
+
+            .folder-tabs {
+                flex-wrap: wrap;
+                padding-left: 10px;
+                gap: 2px;
+            }
+
+            .folder-tab {
+                font-size: 10px;
+                padding: 8px 12px 6px;
+            }
+
+            .punch-holes {
+                left: 15px;
+            }
+
+            .margin-line {
+                left: 45px;
+            }
+
+            .folder-content {
+                padding: 30px 20px 40px 60px;
+            }
+
+            .stamp-confidential {
+                top: 15px;
+                right: 15px;
+                font-size: 10px;
+                padding: 3px 10px;
+            }
+
+            .file-title {
+                font-size: 28px;
+            }
+
+            .info-row {
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .info-label {
+                width: auto;
+                font-size: 11px;
+            }
+
+            .quick-files {
+                grid-template-columns: 1fr;
+            }
+
+            .file-footer {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px 20px 15px 60px;
+            }
+
+            .signature-area {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="file-cabinet">
+        <!-- 폴더 탭 네비게이션 -->
+        <nav class="folder-tabs">
+            <a href="#" class="folder-tab active">HOME</a>
+            <a href="#" class="folder-tab">ABOUT</a>
+            <a href="#" class="folder-tab">RELATIONSHIP</a>
+            <a href="#" class="folder-tab">STORY</a>
+            <a href="#" class="folder-tab">GALLERY</a>
+            <a href="#" class="folder-tab">PLAYLIST</a>
+        </nav>
+
+        <!-- 메인 폴더 -->
+        <main class="main-folder">
+            <!-- 펀치 구멍 -->
+            <div class="punch-holes">
+                <div class="punch-hole"></div>
+                <div class="punch-hole"></div>
+                <div class="punch-hole"></div>
+                <div class="punch-hole"></div>
+                <div class="punch-hole"></div>
+            </div>
+
+            <!-- 빨간 마진 라인 -->
+            <div class="margin-line"></div>
+
+            <!-- 컨텐츠 -->
+            <div class="folder-content">
+                <!-- 기밀 스탬프 -->
+                <div class="stamp-confidential">CONFIDENTIAL</div>
+
+                <!-- 파일 헤더 -->
+                <header class="file-header">
+                    <div class="file-number">CASE FILE NO. 1888-SLP-001</div>
+                    <h1 class="file-title">SLEEPY</h1>
+                    <div class="file-subtitle">BOUNTY HUNTER · HERBALIST · WESTERN FRONTIER</div>
+                </header>
+
+                <!-- 기본 정보 박스 -->
+                <div class="info-box">
+                    <div class="info-box-title">[ SUBJECT INFORMATION ]</div>
+                    <div class="info-row">
+                        <span class="info-label">NAME:</span>
+                        <span class="info-value">Sleepy (슬리피)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">AGE:</span>
+                        <span class="info-value">23</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">HEIGHT:</span>
+                        <span class="info-value">163-165cm</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">OCCUPATION:</span>
+                        <span class="info-value">Bounty Hunter</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">STATUS:</span>
+                        <span class="info-value">Wanted (Falsely Accused)</span>
+                    </div>
+                </div>
+
+                <!-- 클립보드 메모 -->
+                <div class="clipboard-note">
+                    <div class="clipboard-note-content">
+                        "조용히 곁을 지키는 사람"<br>
+                        말 대신 행동으로 마음을 전하는 현상금 사냥꾼.
+                    </div>
+                </div>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-icon">✦</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- 개요 섹션 -->
+                <section class="section">
+                    <div class="section-header">SUMMARY</div>
+                    <div class="section-content typewriter-lines">
+                        <p>
+                            목장주의 딸로 태어나 평범한 삶을 살았으나, 
+                            알 수 없는 사정으로 집을 떠나게 됨. 
+                            이후 억울한 누명을 쓰고 무법자가 되어 
+                            현재 현상금 사냥꾼으로 활동 중.
+                        </p>
+                        <p>
+                            허브를 다루는 솜씨가 뛰어나며, 
+                            말보다 행동으로 마음을 표현하는 성격. 
+                            <span class="handwritten">미남에 대한 면역이 전혀 없음 — 주의 요망</span>
+                        </p>
+                    </div>
+                </section>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-icon">📁</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- 관련 파일 섹션 -->
+                <section class="section">
+                    <div class="section-header">RELATED FILES</div>
+                    <div class="quick-files">
+                        <a href="#" class="file-card">
+                            <div class="file-card-title">ABOUT</div>
+                            <div class="file-card-desc">상세 프로필, 성격 분석, 스킬 정보</div>
+                            <div class="file-card-ref">REF: SLP-PROFILE-001</div>
+                        </a>
+                        <a href="#" class="file-card">
+                            <div class="file-card-title">RELATIONSHIP</div>
+                            <div class="file-card-desc">케이드와의 관계 기록, 동행 일지</div>
+                            <div class="file-card-ref">REF: SLP-REL-001</div>
+                        </a>
+                        <a href="#" class="file-card">
+                            <div class="file-card-title">STORY</div>
+                            <div class="file-card-desc">연대기, 주요 사건 기록</div>
+                            <div class="file-card-ref">REF: SLP-TIMELINE-001</div>
+                        </a>
+                        <a href="#" class="file-card">
+                            <div class="file-card-title">GALLERY</div>
+                            <div class="file-card-desc">사진 자료, 일러스트 아카이브</div>
+                            <div class="file-card-ref">REF: SLP-IMG-001</div>
+                        </a>
+                        <a href="#" class="file-card">
+                            <div class="file-card-title">PLAYLIST</div>
+                            <div class="file-card-desc">음성 자료, 분위기 기록</div>
+                            <div class="file-card-ref">REF: SLP-AUDIO-001</div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- 메모 -->
+                <section class="section">
+                    <div class="section-header">NOTES</div>
+                    <div class="section-content">
+                        <p class="handwritten">
+                            · 케이드 안장에 몰래 사과를 넣어두는 습관 있음<br>
+                            · 허브로 연고 제작 가능 — 의료 지원 역할<br>
+                            · 미남이 가까이 오면 굳어버림 (관찰 필요)<br>
+                            · "케이드가 가만히 있을 때가 가장 위험하다" — 본인 진술
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 날짜 스탬프 -->
+                <div class="date-stamp">
+                    FILE CREATED: 1888.XX.XX<br>
+                    LAST UPDATED: <span class="handwritten-red">ONGOING</span>
+                </div>
+
+                <!-- 서명란 -->
+                <div class="signature-area">
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <div class="signature-label">AUTHORIZED BY</div>
+                    </div>
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <div class="signature-label">DATE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 푸터 -->
+            <footer class="file-footer">
+                <div class="footer-ref">WESTERN FRONTIER ARCHIVES · CASE FILES DIVISION</div>
+                <div class="footer-page">PAGE 1 OF 1</div>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
